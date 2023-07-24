@@ -3,6 +3,8 @@ package com.sh2orc.pay.settlement.service;
 import com.sh2orc.pay.settlement.entity.DutchSettlement;
 import com.sh2orc.pay.settlement.entity.DutchSettlementDetail;
 import com.sh2orc.pay.settlement.entity.KkokioUser;
+import com.sh2orc.pay.settlement.exception.KkokioUserException;
+import com.sh2orc.pay.settlement.exception.SettlementException;
 import com.sh2orc.pay.settlement.repository.DutchSettlementDetailRepository;
 import com.sh2orc.pay.settlement.repository.DutchSettlementRepository;
 import com.sh2orc.pay.settlement.repository.KKokioUserRepository;
@@ -25,12 +27,12 @@ public class DutchPayQueryService {
         //고객 계정 조회
         KkokioUser user = kKokioUserRepository
             .findById(userId)
-            .orElseThrow(() -> new RuntimeException("계정이 없습니다."));
+            .orElseThrow(KkokioUserException::notFound);
 
         //정산 요청한 내역들에 대한 정보 조회
         List<DutchSettlement> dutchSettlements = dutchSettlementRepository
             .findByOwnerUser(user)
-            .orElseThrow(() -> new RuntimeException("정산 내역이 없습니다."));
+            .orElseThrow(SettlementException::notFound);
 
         //리스트 리턴
         return dutchSettlements;
@@ -42,12 +44,12 @@ public class DutchPayQueryService {
         //고객 계정 조회
         KkokioUser user = kKokioUserRepository
             .findById(userId)
-            .orElseThrow(() -> new RuntimeException("계정이 없습니다."));
+            .orElseThrow(KkokioUserException::notFound);
 
         //정산 세부 내역들 조회
         List<DutchSettlementDetail> details = dutchSettlementDetailRepository
             .findByKkokioUser(user)
-            .orElseThrow(() -> new RuntimeException("정산 내역이 없어요"));
+            .orElseThrow(SettlementException::notFound);
 
         //리스트 리턴
         return details;

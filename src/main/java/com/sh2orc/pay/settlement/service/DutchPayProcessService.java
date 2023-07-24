@@ -4,6 +4,8 @@ import com.sh2orc.pay.settlement.entity.DutchSettlement;
 import com.sh2orc.pay.settlement.entity.DutchSettlementDetail;
 import com.sh2orc.pay.settlement.entity.KkokioUser;
 import com.sh2orc.pay.settlement.enums.SettlementStatus;
+import com.sh2orc.pay.settlement.exception.KkokioUserException;
+import com.sh2orc.pay.settlement.exception.SettlementException;
 import com.sh2orc.pay.settlement.repository.DutchSettlementDetailRepository;
 import com.sh2orc.pay.settlement.repository.DutchSettlementRepository;
 import com.sh2orc.pay.settlement.repository.KKokioUserRepository;
@@ -78,21 +80,21 @@ public class DutchPayProcessService {
 
         //고객 계정 엔티티 조회
         KkokioUser user = kKokioUserRepository.findById(userId)
-                                              .orElseThrow(()-> new RuntimeException("고객 계정 없음"));
+                                              .orElseThrow(KkokioUserException::notFound);
 
         //더치 정산 내역 조회
         DutchSettlement dutchSettlement = dutchSettlementRepository
                 .findById(dutchSettlementId)
-                .orElseThrow(()-> new RuntimeException("더치 정산 내역 없음"));
+                .orElseThrow(SettlementException::notFound);
 
         //더치 세부정산 내역 조회
         DutchSettlementDetail dutchSettlementDetail = dutchSettlementDetailRepository
             .findByDutchSettlementAndKkokioUser(dutchSettlement, user)
-            .orElseThrow(() -> new RuntimeException("세부내역 없음"));
+            .orElseThrow(SettlementException::notFound);
 
         //정산 완료 여부 체크
         if(dutchSettlementDetail.getSettlementStatus() == SettlementStatus.COMPLETE){
-            throw new RuntimeException("이미 정산이 완료 되었습니다.");
+            throw SettlementException.alreadyProcessed();
         }
 
         //남은 정산금액이 지급하려는 금액보다 작다면 amount 만큼만 정산
@@ -101,7 +103,7 @@ public class DutchPayProcessService {
 
         //고객 계정 잔고 확인
         if( user.getBalance() < settlementAmount ){
-            throw new RuntimeException("잔고가 부족합니다");
+            throw KkokioUserException.shortageBalance();
         }
 
         //정산 오너 대상자
@@ -132,8 +134,7 @@ public class DutchPayProcessService {
                 dutchSettlement.ongoing();
             }
         } else {
-            dutchSettlementDetail.update(paidAmount,
-                                         SettlementStatus.ONGOING);
+            dutchSettlementDetail.update(paidAmount, SettlementStatus.ONGOING);
         }
 
         return dutchSettlementDetail;

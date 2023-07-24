@@ -4,6 +4,7 @@ import com.sh2orc.pay.settlement.entity.DutchSettlement;
 import com.sh2orc.pay.settlement.entity.DutchSettlementDetail;
 import com.sh2orc.pay.settlement.entity.KkokioUser;
 import com.sh2orc.pay.settlement.enums.SettlementStatus;
+import com.sh2orc.pay.settlement.exception.SettlementException;
 import com.sh2orc.pay.settlement.repository.DutchSettlementDetailRepository;
 import com.sh2orc.pay.settlement.repository.DutchSettlementRepository;
 import com.sh2orc.pay.settlement.repository.KKokioUserRepository;
@@ -90,7 +91,7 @@ public class DutchPayProcessServiceTest {
         //세부 정산 내역 조회
         List<DutchSettlementDetail> settlementDetails = dutchSettlementDetailRepository
                 .findByDutchSettlement(dutchSettlement)
-                .orElseThrow(() -> new RuntimeException("세부정산 데이터가 없음"));
+                .orElseThrow(SettlementException::notFound);
 
         //세부정산 내역 검증
         Assertions.assertEquals(3, settlementDetails.size());
