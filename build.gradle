@@ -15,6 +15,10 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+
+    // 통합테스트용 testIntegration configurations 구성
+    testIntegrationImplementation.extendsFrom implementation
+    testIntegrationRuntimeOnly.extendsFrom runtimeOnly
 }
 
 repositories {
@@ -24,12 +28,35 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testIntegrationImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// ------- 통합테스트 환경 구성
+
+sourceSets {
+    testIntegration { // testIntegration 레이블
+        java.srcDir "$projectDir/src/test-integration/java"
+        resources.srcDir "$projectDir/src/test-integration/resources"
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+    }
+}
+
+//testIntegration : task 정의
+task testIntegration(type: Test) {
+    testClassesDirs = sourceSets.testIntegration.output.classesDirs
+    classpath = sourceSets.testIntegration.runtimeClasspath
+    useJUnitPlatform()
+}
+
+
+check.dependsOn testIntegration

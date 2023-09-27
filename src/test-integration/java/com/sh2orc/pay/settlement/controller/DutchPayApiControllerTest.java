@@ -17,10 +17,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 @AutoConfigureMockMvc
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
+@DisplayName("더치페이 API 테스트")
+@ActiveProfiles("test-integration")
 public class DutchPayApiControllerTest {
 
     //로그 출력을 위한 객체 생성
@@ -58,7 +62,7 @@ public class DutchPayApiControllerTest {
     void setup(){
         this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
                                       .addFilters(new CharacterEncodingFilter("UTF-8", true))  // 필터 추가
-                                      .alwaysDo(print())
+                                      .alwaysDo(MockMvcResultHandlers.print())
                                       .build();
 
 
@@ -110,7 +114,7 @@ public class DutchPayApiControllerTest {
                       .get(URI)
                       .header(HttpHeaders.CONTENT_TYPE, "application/json")
              ).andExpect(MockMvcResultMatchers.status().isOk())
-             .andDo(print())
+             .andDo(MockMvcResultHandlers.print())
              .andReturn();
 
         //리턴 Payload 객체 매핑
@@ -146,7 +150,7 @@ public class DutchPayApiControllerTest {
                                              .get(URI)
                                              .header(HttpHeaders.CONTENT_TYPE, "application/json")
                                      ).andExpect(MockMvcResultMatchers.status().isOk())
-                                     .andDo(print())
+                                     .andDo(MockMvcResultHandlers.print())
                                      .andReturn();
 
         //리턴 Payload 객체 매핑
